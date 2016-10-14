@@ -2,8 +2,8 @@
 import sys
 from xml.dom.minidom import parseString
 
-from utils import ( get_endpoint_response, get_config_store )
-from lxml import etree, objectify
+from utils import get_endpoint_response, get_config_store, add_elem
+from xml.etree import ElementTree as ET
                     
 
 def addItemWithPic( image, **kwargs ):
@@ -23,14 +23,13 @@ def addItem( title, description, primaryCategoryId, startPrice='0.99',
     token = get_config_store().get("auth", "token")
     oname = "AddItem" if not test else 'VerifyAddItem'
     rname = "%sRequest" % oname
-    root = etree.Element(rname, xmlns="urn:ebay:apis:eBLBaseComponents")
+    root = ET.Element(rname, xmlns="urn:ebay:apis:eBLBaseComponents")
 
     # add to xml 
-    credentials_elem = etree.SubElement(root, "RequesterCredentials")
-    token_elem = etree.SubElement(credentials_elem, "eBayAuthToken")
-    token_elem.text = token
+    credentials_elem = add_elem(root, "RequesterCredentials")
+    token_elem = add_elem(credentials_elem, "eBayAuthToken", token)
 
-    item_elem = etree.SubElement(root, "Item")
+    item_elem = add_elem(root, "Item")
     
     title_elem = add_elem(item_elem, "Title", title)
     desc_elem = add_elem(item_elem, "Description", description)

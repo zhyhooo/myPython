@@ -1,8 +1,10 @@
 #-*- coding: utf-8 -*-
 import sys, os
-import json, requests, urllib2
+import json, urllib2
 from ConfigParser import ConfigParser
-from lxml import etree
+from xml.etree import ElementTree as ET
+from os.path import join, dirname, abspath
+
 
 CONFIG = None
 
@@ -32,6 +34,8 @@ def get_endpoint_response(endpoint_name, operation_name, data, encoding, **heade
     res = urllib2.urlopen(req)
     return res.read()
 
+def relative(*paths):
+    return join(dirname(abspath(__file__)), *paths)
 
 def set_config_file(filename):
     '''
@@ -48,14 +52,14 @@ def get_config_store():
     global CONFIG
     if CONFIG is None:
         CONFIG = ConfigParser()
-	CONFIG.read("./default-config.cfg")
+	CONFIG.read(relative("default-config.cfg"))
     return CONFIG
 
 
 def add_elem(parent, key, value=None):
-    child = etree.SubElement(parent, key)
-    if val:
-        child.text = str(val)
+    child = ET.SubElement(parent, key)
+    if value:
+        child.text = str(value)
     return child
 
 class Value(object):
