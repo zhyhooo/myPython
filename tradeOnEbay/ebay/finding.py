@@ -4,13 +4,13 @@ from lxml import etree
 from utils import get_config_store
 
 def findItemsByKeywords(
-        keywords, affiliate=None,
-    	buyerPostalCode=None, paginationInput=None,
-	    sortOrder=None, aspectFilter=None,
-	    domainFilter=None, itemFilter=None,
-	    outputSelector=None, encoding="JSON"):
-        root = etree.Element("findItemsByKeywords",
-                    xmlns="http://www.ebay.com/marketplace/search/v1/services")
+    keywords, affiliate=None,
+    buyerPostalCode=None, paginationInput=None,
+    sortOrder=None, aspectFilter=None,
+    domainFilter=None, itemFilter=None,
+    outputSelector=None, encoding="JSON"):
+    root = etree.Element("findItemsByKeywords",
+                xmlns="http://www.ebay.com/marketplace/search/v1/services")
 
     keywords_elem = etree.SubElement(root, "keywords")
     keywords_elem.text = keywords
@@ -63,3 +63,22 @@ def findItemsByKeywords(
 
     request = etree.tostring(root, pretty_print=True)
     return get_response(findItemsByKeywords.__name__, request, encoding)
+
+def get_response(operation_name, data, encoding, **headers):
+    config = get_config_store()
+    globalID = config.get("call", "globalid")
+    app_name = config.get("keys", "app_name")
+    endpoint = config.get("endpoints", "finding")
+
+    http_headers = {
+        "X-EBAY-SOA-OPERATION-NAME": operation_name,
+        "X-EBAY-SOA-SECURITY-APPNAME": app_name,
+        "X-EBAY-SOA-GLOBAL-ID": globalId,
+        "X-EBAY-SOA-RESPONSE-DATA-FORMAT": encoding}
+
+    http_headers.update(headers)
+
+    req = urllib2.Request(endpoint, data, http_headers)
+    res = urllib2.urlopen(req)
+    return res.read()
+    

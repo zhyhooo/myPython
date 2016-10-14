@@ -52,6 +52,12 @@ def get_config_store():
     return CONFIG
 
 
+def add_elem(parent, key, value=None):
+    child = etree.SubElement(parent, key)
+    if val:
+        child.text = str(val)
+    return child
+
 class Value(object):
     def __init__(self,
                  number=None,
