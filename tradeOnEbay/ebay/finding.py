@@ -55,12 +55,60 @@ def findItemsByKeywords(
             outputSelector_elem = add_elem(root, "outputSelector", item)
 
     tree = ET.ElementTree(root)
-    request = ET.dump(tree)
+    request = ET.tostring(root, 'utf-8')
+    return get_response(findItemsByKeywords.__name__, request, encoding)
+
+
+def appendArgus( root, **kwargs ):
+    for kw, arg in kwargs.items():
+        if kw == "keyword" and arg:
+            keywords_elem = add_elem(root, kw, arg)
+        if kw == "affiliate" and arg:
+            affiliate_elem = add_elem(root, kw)
+            for key in arg:
+                key_elem = add_elem(affiliate_elem, key, arg[key])
+        if kw == "buyerPostalCode" and arg:
+            buyPostalCode_elem = add_elem(root, kw, arg)
+        if kw == "paginationInput" and arg:
+            paginationInput_elem = add_elem(root, kw)
+            for key in arg:
+                key_elem = add_elem(paginationInput_elem, key, arg[key])
+        if 
+    # a list of dict
+    if itemFilter:
+        for item in itemFilter:
+            itemFilter_elem = add_elem(root, "itemFilter")
+            for key in item:
+                key_elem = add_elem(itemFilter_elem, key, item[key])
+
+    if sortOrder:
+        sortOrder_elem = add_elem(root, "sortOrder", sortOrder)
+
+    # a list of dict
+    if aspectFilter:
+        for subDict in aspectFilter:
+            aspectFilter_elem = add_elem(root, "aspectFilter")
+            for key in subDict:
+                key_elem = add_elem(aspectFilter_elem, key, item[key])
+
+    # a list of Dict
+    if domainFilter:
+        for subDict in domainFilter:
+            domainFilter_elem = add_elem(root, "domianFilter")
+            for key in subDict:
+                key_elem = add_elem(domainFilter_elem, key, item[key])
+
+    if outputSelector:
+        for item in outputSelector:
+            outputSelector_elem = add_elem(root, "outputSelector", item)
+
+    tree = ET.ElementTree(root)
+    request = ET.tostring(root, 'utf-8')
     return get_response(findItemsByKeywords.__name__, request, encoding)
 
 def get_response(operation_name, data, encoding, **headers):
     config = get_config_store()
-    print config
+    print data
     app_name = config.get("keys", "app_name")
     globalID = config.get("call", "global_id")
     endpoint = config.get("endpoints", "finding")

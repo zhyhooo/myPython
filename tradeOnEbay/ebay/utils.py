@@ -52,7 +52,7 @@ def get_config_store():
     global CONFIG
     if CONFIG is None:
         CONFIG = ConfigParser()
-	CONFIG.read(relative("default-config.cfg"))
+	CONFIG.read(relative("myConfig.cfg"))
     return CONFIG
 
 
