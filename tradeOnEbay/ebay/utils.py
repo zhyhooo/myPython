@@ -56,10 +56,13 @@ def get_config_store():
     return CONFIG
 
 
-def add_elem(parent, key, value=None):
+def add_elem(parent, key, value=None, tags=None):
     child = ET.SubElement(parent, key)
     if value:
         child.text = str(value)
+    if tags:
+        for k in tags:
+            child.attrib[k] = tags[k]
     return child
 
 class Value(object):

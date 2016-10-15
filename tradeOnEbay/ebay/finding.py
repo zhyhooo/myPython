@@ -25,6 +25,8 @@ def appendArgus( root, **kwargs ):
         if kw == "categoryId" and arg:
             for category in arg[0:4]:
                 category_elem = add_elem(root, kw, category)
+        if kw == "storeName" and arg:
+            store_elem = add_elem(root, kw, arg)
         # a list of dict
         if kw == "itemFilter" and arg:
             for subDict in arg:
@@ -47,7 +49,7 @@ def appendArgus( root, **kwargs ):
             for item in arg:
                 outputSelector_elem = add_elem(root, kw, item)
         if kw == "productId" and arg:
-            productId_elem = add_elem(root, kw, arg)
+            productId_elem = add_elem(root, kw, arg["id"], arg.get("attr", None) )
     return root
 
 
@@ -56,7 +58,7 @@ def findItemsByKeywords(
     buyerPostalCode=None, paginationInput=None,
     sortOrder=None, aspectFilter=None,
     domainFilter=None, itemFilter=None,
-    outputSelector=None, encoding="JSON"):
+    outputSelector=None, encoding="XML"):
 
     api_name = findItemsByKeywords.__name__
     root = ET.Element(api_name, xmlns="http://www.ebay.com/marketplace/search/v1/services")
@@ -75,11 +77,29 @@ def findCompletedItems(
     buyerPostalCode=None, paginationInput=None,
     sortOrder=None, aspectFilter=None, productId=None,
     domainFilter=None, itemFilter=None,
-    outputSelector=None, encoding="JSON"):
+    outputSelector=None, encoding="XML"):
 
     api_name = findCompletedItems.__name__
     root = ET.Element(api_name, xmlns="http://www.ebay.com/marketplace/search/v1/services")
     root = appendArgus( root, keywords=keywords, affiliate=affiliate,
+                        buyerPostalCode=buyerPostalCode, paginationInput=paginationInput,
+                        sortOrder=sortOrder, aspectFilter=aspectFilter, productId=productId,
+                        domainFilter=domainFilter, itemFilter=itemFilter,
+                        outputSelector=outputSelector)
+
+    request = ET.tostring(root, 'utf-8')
+    return get_response(api_name, request, encoding)
+
+def findItemsByProduct(
+    productId, affiliate=None,
+    buyerPostalCode=None, paginationInput=None,
+    sortOrder=None, aspectFilter=None,
+    domainFilter=None, itemFilter=None,
+    outputSelector=None, encoding="XML"):
+
+    api_name = findItemsByProduct.__name__
+    root = ET.Element(api_name, xmlns="http://www.ebay.com/marketplace/search/v1/services")
+    root = appendArgus( root, productId=productId, affiliate=affiliate,
                         buyerPostalCode=buyerPostalCode, paginationInput=paginationInput,
                         sortOrder=sortOrder, aspectFilter=aspectFilter,
                         domainFilter=domainFilter, itemFilter=itemFilter,
@@ -88,6 +108,14 @@ def findCompletedItems(
     request = ET.tostring(root, 'utf-8')
     return get_response(api_name, request, encoding)
 
+def getHistograms(categoryId, encoding="XML"):
+    api_name = getHistograms.__name__
+    root = ET.Element(api_name, xmlns="http://www.ebay.com/marketplace/search/v1/services")
+    root = appendArgus( root, categoryId=categoryId)
+
+    request = ET.tostring(root, 'utf-8')
+    return get_response(api_name, request, encoding)
+    
 
 def get_response(operation_name, data, encoding, **headers):
     config = get_config_store()
@@ -103,6 +131,7 @@ def get_response(operation_name, data, encoding, **headers):
 
     http_headers.update(headers)
 
+    print data
     req = urllib2.Request(endpoint, data, http_headers)
     res = urllib2.urlopen(req)
     return res.read()
