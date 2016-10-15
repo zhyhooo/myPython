@@ -2,67 +2,10 @@ import sys,urllib2
 from xml.etree import ElementTree as ET
 from utils import get_config_store, add_elem
 
-def findItemsByKeywords(
-    keywords, affiliate=None,
-    buyerPostalCode=None, paginationInput=None,
-    sortOrder=None, aspectFilter=None,
-    domainFilter=None, itemFilter=None,
-    outputSelector=None, encoding="JSON"):
-    root = ET.Element("findItemsByKeywords",
-                xmlns="http://www.ebay.com/marketplace/search/v1/services")
-
-    keywords_elem = add_elem(root, "keywords", keywords)
-
-    if affiliate:
-        affiliate_elem = add_elem(root, "affiliate")
-        for key in affiliate:
-            key_elem = add_elem(affiliate_elem, key, affiliate[key])
-
-    if buyerPostalCode:
-        buyPostalCode_elem = add_elem(root, "buyerPostalCode", buyerPostalCode)
-
-    if paginationInput:
-        paginationInput_elem = add_elem(root, "paginationInput")
-        for key in paginationInput:
-            key_elem = add_elem(paginationInput_elem, key, paginationInput[key])
-
-    # a list of dict
-    if itemFilter:
-        for item in itemFilter:
-            itemFilter_elem = add_elem(root, "itemFilter")
-            for key in item:
-                key_elem = add_elem(itemFilter_elem, key, item[key])
-
-    if sortOrder:
-        sortOrder_elem = add_elem(root, "sortOrder", sortOrder)
-
-    # a list of dict
-    if aspectFilter:
-        for subDict in aspectFilter:
-            aspectFilter_elem = add_elem(root, "aspectFilter")
-            for key in subDict:
-                key_elem = add_elem(aspectFilter_elem, key, item[key])
-
-    # a list of Dict
-    if domainFilter:
-        for subDict in domainFilter:
-            domainFilter_elem = add_elem(root, "domianFilter")
-            for key in subDict:
-                key_elem = add_elem(domainFilter_elem, key, item[key])
-
-    if outputSelector:
-        for item in outputSelector:
-            outputSelector_elem = add_elem(root, "outputSelector", item)
-
-    tree = ET.ElementTree(root)
-    request = ET.tostring(root, 'utf-8')
-    return get_response(findItemsByKeywords.__name__, request, encoding)
-
 
 def appendArgus( root, **kwargs ):
     for kw, arg in kwargs.items():
-        if kw == "keyword" and arg:
-            keywords_elem = add_elem(root, kw, arg)
+        # standard input fields
         if kw == "affiliate" and arg:
             affiliate_elem = add_elem(root, kw)
             for key in arg:
@@ -73,42 +16,81 @@ def appendArgus( root, **kwargs ):
             paginationInput_elem = add_elem(root, kw)
             for key in arg:
                 key_elem = add_elem(paginationInput_elem, key, arg[key])
-        if 
-    # a list of dict
-    if itemFilter:
-        for item in itemFilter:
-            itemFilter_elem = add_elem(root, "itemFilter")
-            for key in item:
-                key_elem = add_elem(itemFilter_elem, key, item[key])
+        if kw == "sortOrder" and arg:
+            sortOrder_elem = add_elem(root, kw, arg)
 
-    if sortOrder:
-        sortOrder_elem = add_elem(root, "sortOrder", sortOrder)
+        # call-specific input fields
+        if kw == "keywords" and arg:
+            keywords_elem = add_elem(root, kw, arg)
+        if kw == "categoryId" and arg:
+            for category in arg[0:4]:
+                category_elem = add_elem(root, kw, category)
+        # a list of dict
+        if kw == "itemFilter" and arg:
+            for subDict in arg:
+                itemFilter_elem = add_elem(root, kw)
+                for key in subDict:
+                    key_elem = add_elem(itemFilter_elem, key, subDict[key])
+        # a list of dict
+        if kw == "aspectFilter" and arg:
+            for subDict in arg:
+                aspectFilter_elem = add_elem(root, kw)
+                for key in subDict:
+                    key_elem = add_elem(aspectFilter_elem, key, subDict[key])
+        # a list of Dict
+        if kw == "domainFilter" and arg:
+            for subDict in arg:
+                domainFilter_elem = add_elem(root, kw)
+                for key in subDict:
+                    key_elem = add_elem(domainFilter_elem, key, subDict[key])
+        if kw == "outputSelector" and arg:
+            for item in arg:
+                outputSelector_elem = add_elem(root, kw, item)
+        if kw == "productId" and arg:
+            productId_elem = add_elem(root, kw, arg)
+    return root
 
-    # a list of dict
-    if aspectFilter:
-        for subDict in aspectFilter:
-            aspectFilter_elem = add_elem(root, "aspectFilter")
-            for key in subDict:
-                key_elem = add_elem(aspectFilter_elem, key, item[key])
 
-    # a list of Dict
-    if domainFilter:
-        for subDict in domainFilter:
-            domainFilter_elem = add_elem(root, "domianFilter")
-            for key in subDict:
-                key_elem = add_elem(domainFilter_elem, key, item[key])
+def findItemsByKeywords(
+    keywords, affiliate=None,
+    buyerPostalCode=None, paginationInput=None,
+    sortOrder=None, aspectFilter=None,
+    domainFilter=None, itemFilter=None,
+    outputSelector=None, encoding="JSON"):
 
-    if outputSelector:
-        for item in outputSelector:
-            outputSelector_elem = add_elem(root, "outputSelector", item)
+    api_name = findItemsByKeywords.__name__
+    root = ET.Element(api_name, xmlns="http://www.ebay.com/marketplace/search/v1/services")
+    root = appendArgus( root, keywords=keywords, affiliate=affiliate,
+                        buyerPostalCode=buyerPostalCode, paginationInput=paginationInput,
+                        sortOrder=sortOrder, aspectFilter=aspectFilter,
+                        domainFilter=domainFilter, itemFilter=itemFilter,
+                        outputSelector=outputSelector)
 
-    tree = ET.ElementTree(root)
     request = ET.tostring(root, 'utf-8')
-    return get_response(findItemsByKeywords.__name__, request, encoding)
+    return get_response(api_name, request, encoding)
+
+
+def findCompletedItems(
+    keywords, affiliate=None, categoryId=None,
+    buyerPostalCode=None, paginationInput=None,
+    sortOrder=None, aspectFilter=None, productId=None,
+    domainFilter=None, itemFilter=None,
+    outputSelector=None, encoding="JSON"):
+
+    api_name = findCompletedItems.__name__
+    root = ET.Element(api_name, xmlns="http://www.ebay.com/marketplace/search/v1/services")
+    root = appendArgus( root, keywords=keywords, affiliate=affiliate,
+                        buyerPostalCode=buyerPostalCode, paginationInput=paginationInput,
+                        sortOrder=sortOrder, aspectFilter=aspectFilter,
+                        domainFilter=domainFilter, itemFilter=itemFilter,
+                        outputSelector=outputSelector)
+
+    request = ET.tostring(root, 'utf-8')
+    return get_response(api_name, request, encoding)
+
 
 def get_response(operation_name, data, encoding, **headers):
     config = get_config_store()
-    print data
     app_name = config.get("keys", "app_name")
     globalID = config.get("call", "global_id")
     endpoint = config.get("endpoints", "finding")
