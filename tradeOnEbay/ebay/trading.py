@@ -69,3 +69,7 @@ def addItem( title, description, primaryCategoryId, startPrice='0.99',
         pass
     site_elem         = add_elem(item_elem, "Site", site)
 
+    request = ET.tostring(root, 'utf-8')
+    return get_response(oname, request, encoding)
+   
+
