@@ -1,7 +1,10 @@
+# -*- coding: utf-8 -*-
 import os, sys
 import jieba
 from utils import get_config_store
 
+reload(sys)
+sys.setdefaultencoding("utf-8")
 
 
 class Segmenter(object):
@@ -15,12 +18,18 @@ class Segmenter(object):
 	config  = get_config_store()
 	self.cut_all = config.get("segment", "cut_all")
 	self.HMM     = config.get("segment", "HMM")
+	
 	customized_dict = config.get("segment", "customized_dict")
         if customized_dict:
-	    load_dict(customized_dict)
+	    self.load_dict(customized_dict)
 
+	self.stopwords = set()
+	stopword_file  = config.get("segment", "stopword")
+	if stopword_file:
+            self.load_stopwords( stopword_file )
+        
 
-    def load_dict( filename ):
+    def load_dict( self, filename ):
         '''
 	load customized dictionary
 	'''
@@ -29,13 +38,30 @@ class Segmenter(object):
             return
 	self.segmenter.load_userdict( filename )
 
+    def load_stopwords( self, filename ):
+        '''
+	remove the stopwords 
+	'''
+        if not os.path.isfile( filename ):
+            sys.stderr.write( "cannot find file: %s." %filename )
+            return
+	fin = open(filename, 'r')
+	stopwords = []
+	for line in fin:
+            if line.startswith('#'):
+	        continue
+	    stopwords.append( line.strip() )
+	self.stopwords = set(stopwords)
+
     
-    def cut_line(self, input_line, cut_all=False ):
+    def cut_line( self, input_line, cut_all=False ):
         '''
         just cut a single line, and return a list of tokens
         '''
         seg_list = self.segmenter.cut( input_line, cut_all=cut_all )
-        return [ x for x in seg_list if x.strip() ]
+	seg_list = [ x.encode('utf-8') for x in seg_list ]
+        tokens = [ x for x in seg_list if x.strip() and not x in self.stopwords ]
+	return tokens
 
 
     def cut_one_file( self, filename, cut_all=False ):
