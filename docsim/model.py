@@ -7,5 +7,5 @@ class Model( object ):
     def __init__(self):
         config = get_config_store()
 	
-	method = config.get("method", "model")
-        self.model = 
+	method = config.get("model", "method")
+        self.model =  
