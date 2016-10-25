@@ -20,7 +20,7 @@ def get_endpoint_response(endpoint_name, operation_name, data, encoding, **heade
     compatibility_level = config.get("call", "compatibility_level")
 
     http_headers = {
-                "X-EBAY-API-COMPATIBILITY-LEVEL": compatibility_level,
+        "X-EBAY-API-COMPATIBILITY-LEVEL": compatibility_level,
 		"X-EBAY-API-DEV-NAME": dev_name,
 		"X-EBAY-API-APP-NAME": app_name,
 		"X-EBAY-API-CERT-NAME": cert_name,
@@ -33,6 +33,36 @@ def get_endpoint_response(endpoint_name, operation_name, data, encoding, **heade
     req = urllib2.Request(endpoint, data, http_headers)
     res = urllib2.urlopen(req)
     return res.read()
+
+def get_endpoint_with_file( endpoint_name, operation_name, fobj, 
+                            data, encoding, **headers ):
+    config = get_config_store()
+    endpoint = config.get("endpoints", endpoint_name)
+    app_name = config.get("keys", "app_name")
+    dev_name = config.get("keys", "dev_name")
+    cert_name = config.get("keys", "cert_name")
+    compatibility_level = config.get("call", "compatibility_level")
+    siteId = config.get("call", "siteid")
+
+    http_headers = {
+        "X-EBAY-API-COMPATIBILITY-LEVEL": compatibility_level,
+		"X-EBAY-API-DEV-NAME": dev_name,
+		"X-EBAY-API-APP-NAME": app_name,
+		"X-EBAY-API-CERT-NAME": cert_name,
+		"X-EBAY-API-CALL-NAME": operation_name,
+		"X-EBAY-API-SITEID": siteId,
+		"Content-Type": "text/xml"}
+
+    http_headers.update(headers)
+
+    files = {'file':( 'image', fobj )}
+    dataload = {'body':data}
+    res = requests.post( endpoint, headers=http_headers,
+                         files=files, data=dataload)
+
+    return res.text 
+
+
 
 def relative(*paths):
     return join(dirname(abspath(__file__)), *paths)

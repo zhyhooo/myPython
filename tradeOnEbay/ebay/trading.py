@@ -2,7 +2,8 @@
 import sys
 from xml.dom.minidom import parseString
 
-from utils import get_endpoint_response, get_config_store, add_elem
+from utils import get_endpoint_response, get_endpoint_response_with_file,
+                  get_config_store, add_elem
 from xml.etree import ElementTree as ET
                     
 
@@ -70,6 +71,10 @@ def addItem( title, description, primaryCategoryId, startPrice='0.99',
     site_elem         = add_elem(item_elem, "Site", site)
 
     request = ET.tostring(root, 'utf-8')
-    return get_response(oname, request, encoding)
+    return get_response(oname, request)
    
+def get_response( operation_name, data, encoding="utf-8", **headers ):
+    return get_endpoint_response( "trading", operation_name, data, encoding, **headers )
 
+def get_response_with_file( operation_name, fobj, data, encoding="utf-8", **headers ):
+    return get_endpoint_response_with_file( "trading", operation_name, fobj, data, encoding, **headers ) 
