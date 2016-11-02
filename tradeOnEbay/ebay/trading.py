@@ -73,6 +73,43 @@ def addItem( title, description, primaryCategoryId, startPrice='0.99',
     request = ET.tostring(root, 'utf-8')
     return get_response(oname, request)
    
+def getCategories( parentId=None, detailLevel='ReturnAll', errorLanguage=None,
+                   messageId=None, outputSelector=None, version=None, levelLimit=1,
+		   warningLevel="High", viewAllNodes=True, categorySiteId=0,
+		   encoding="JSON"):
+    '''
+    based on http://developer.ebay.com/DevZone/XML/docs/Reference/eBay/GetCategories.html#Request
+    '''
+    # get user auth token
+    token = get_config_store().get("auth", "token")
+    root = ET.Element(rname, xmlns="urn:ebay:apis:eBLBaseComponents")
+    #add it to the xml doc
+    credentials_elem = add_elem(root, "RequesterCredentials")
+    token_elem       = add_elem(credentials_elem, "eBayAuthToken", token)
+
+    if parentId == None and levelLimit:
+        levelLimit_elem = add_elem(root, "LevelLimit", levelLimit)
+    elif parentId:
+        parentId_elem   = add_elem(root, "CategoryParent", parentId)
+
+    viewAllNodes_elem   = add_elem(root, "ViewAllNodes", viewAllNodes.lower())
+    categorySiteId_elem = add_elem(root, "CategorySiteID", categorySiteId)
+    if detailLevel:
+        add_elem(root, "DetailLevel", detailLevel)
+    if errorLanguage:
+        add_elem(root, "ErrorLanguage", errorLanguage)
+    if messageId:
+        add_elem(root, "MessageID", messageId)
+    if outputSelector:
+        add_elem(root, "OutputSelector", outputSelector)
+    if version:
+        add_elem(root, "Version", version)
+    if warningLevel:
+        add_elem(root, "WarningLevel", warningLevel)
+
+
+
+
 def get_response( operation_name, data, encoding="utf-8", **headers ):
     return get_endpoint_response( "trading", operation_name, data, encoding, **headers )
 
