@@ -82,6 +82,7 @@ def getCategories( parentId=None, detailLevel='ReturnAll', errorLanguage=None,
     '''
     # get user auth token
     token = get_config_store().get("auth", "token")
+    oname = "GetCategories"
     root = ET.Element(rname, xmlns="urn:ebay:apis:eBLBaseComponents")
     #add it to the xml doc
     credentials_elem = add_elem(root, "RequesterCredentials")
@@ -106,8 +107,35 @@ def getCategories( parentId=None, detailLevel='ReturnAll', errorLanguage=None,
         add_elem(root, "Version", version)
     if warningLevel:
         add_elem(root, "WarningLevel", warningLevel)
+    request = ET.tostring(root, 'utf-8')
+    return get_response( oname, request)
 
 
+def uploadSiteHostedPicture(filepath):
+    isURL = 'http://' in filepath or 'https://' in filepath
+    token = get_config_store().get("auth", "token")
+    oname = "UploadSiteHostedPictures"
+    rname = oname + "Request"
+
+    root = ET.Element(rname, xmlns="urn:ebay:apis:eBLBaseComponents")
+    #add it to the xml doc
+    credentials_elem = add_elem(root, "RequesterCredentials")
+    token_elem       = add_elem(credentials_elem, "eBayAuthToken", token)
+
+    add_elem(root, "PictureSet", "Supersize")
+    if isURL:
+        urlpath = filepath
+    else:
+        try:
+	    urlpath = imgur_post(filepath)
+	except Exception as e:
+	    sys.stderr.write("Unable to upload img: %s.\n" % filepath)
+	    raise e
+
+    add_elem(root, "ExternalPictureURL", urlpath)
+    request = ET.tostring(root, 'utf-8')
+    response = get_response(oname, request)
+    return urlpath
 
 
 def get_response( operation_name, data, encoding="utf-8", **headers ):
