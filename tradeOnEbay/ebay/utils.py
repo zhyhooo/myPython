@@ -104,3 +104,20 @@ class Value(object):
 	self.text = text
 	self.url = url
 
+def imgur_post(filepath):
+    imgur_key = get_config_store().get("keys", "imgur_key")
+    fobj = open(filepath, "rb")
+    bimage = fobj.read() 
+    fobj.close()
+    b64image = base64.b64encode(bimage)
+    payload = {
+        'key': imgur_key,
+        'image': b64image,
+        'title': 'an upload'
+    }
+    endpoint = 'http://api.imgur.com/2/upload.json'
+    r = requests.post(endpoint, data=payload)
+    j = json.loads(r.text)
+    url = j['upload']['links']['original']
+    sys.stderr.write('Upload Success!    %s    %s\n' % (filepath, url))
+    return url
