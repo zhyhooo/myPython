@@ -46,23 +46,15 @@ def matrix_factorization(U, V, B, C, steps=201, mu=1, reg=0.1):
 
 
         nR = np.add( np.add( np.add( np.dot(U,V), C ), B.reshape((M, 1)) ), mu )
-        #for i in xrange(M):
-        #    for j in xrange(N):
-        #        if mat[i, j]:
-        #            print i, j, nR[i,j], mat[i,j] 
         error = np.sum( np.power( np.multiply((mat - nR), mask), 2) )
         print "Step %d is done... square errors: %f" %(t, error)
 
-        if t%50==0 and t>0:
+        if t%100==0 and t>0:
             fout = open('result01_'+str(t), 'w')
             for i in xrange(M):
                 for j in xrange(N):
                     print >>fout, "%s\t%s\t%s\t%s\t%f" % (rindex[i][0], rindex[j][0], rindex[i][1], rindex[j][1], nR[i,j] )
 
-    np.save('nU_'+str(t), U)
-    np.save('nV_'+str(t), V)
-    np.save('nB_'+str(t), B)
-    np.save('nC_'+str(t), C)
     return U, V, B, C
 
 
@@ -94,25 +86,31 @@ def loadData(finput='cid2cid.txt'):
     return mat, index, dindex, rindex
 
 
+def norm(mat, method="log_minmax"):
+    if method=="minmax":
+        max_ff = np.amax(mat, axis=1)
+        mat = mat *1.0 / max_ff[:, np.newaxis]
+    elif method=="log_minmax":
+        max_ff = np.amax(mat)
+        mat = np.log2(mat+1) / np.log2(max_ff+1)
+    mat[np.isnan(mat)] = 0
+    return mat
+    
+
 ## load data from disk
 loadFromDisk = False
 mat, max_index, dindex, rindex = loadData()
 print len(mat), max_index, len(dindex), len(rindex)
+
+
 M = N = max_index
-
-
-print "The actual matrix size is %d-by-%d." %(N, M)
 K = 50
+print "The actual matrix size is %d-by-%d." %(N, M)
 
 row = np.array([ x[0] for x in mat.keys() ])
 col = np.array([ x[1] for x in mat.keys() ])
 data = np.array(mat.values())
 mat  = coo_matrix((data, (row, col)), shape=(M, N)).toarray()
-#max_ff = np.amax(mat, axis=1)
-#mat = mat *1.0 / max_ff[:, np.newaxis]
-max_ff = np.amax(mat)
-mat = np.log2(mat+1) / np.log2(max_ff+1)
-mat[np.isnan(mat)] = 0
 mask = coo_matrix((np.array([1]*len(row)), (row, col)), shape=(M, N)).toarray()
 print mat.shape, mask.shape
 
@@ -129,6 +127,9 @@ else:
 
 nU, nV, nB, nC = matrix_factorization(U, V, B, C)
 print "matrix factorization is done."
-#nR = np.add( np.add( np.dot(U,V), C ), B.reshape((M, 1)) )
 
+np.save('nU_'+str(t), U)
+np.save('nV_'+str(t), V)
+np.save('nB_'+str(t), B)
+np.save('nC_'+str(t), C)
 

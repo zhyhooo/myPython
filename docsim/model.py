@@ -11,13 +11,13 @@ class Model( object ):
         self.config = get_config_store()
         self.dictionary = Null
 	    train_set = config.get("path", "train_dir")
-        load_data( train_set )
+        __initData( train_set )
 
-	    method = config.get("model", "method")
+        method = config.get("model", "method")
         func = MODEL[method] 
         self.model = func
 
-    def load_data( self, path ):
+    def __initData( self, path ):
         seger = Segmenter
         corpus = seger.cut_folder( path )
         if corpus:
@@ -26,4 +26,7 @@ class Model( object ):
     def doc2vec( self, doc ):
         vec = self.dictionary.doc2bow( doc.split() )
         return vec
-        
+      
+    def docsim( self, doc1, doc2 ):
+        vec1 = doc2vec( doc1 )
+	vec2 = doc2vec( doc2 )

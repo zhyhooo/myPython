@@ -2,7 +2,6 @@
 import sys, os, time
 import numpy as np
 import xgboost as xgb
-from schema import schema, feature
 from utils import load_testset, tictoc, set_config_file, get_config_store
 from metrics import precision_model
 
@@ -18,10 +17,13 @@ if __name__ == '__main__':
     score_path   = config.get("path", "score_path")
     missing      = float(config.get("model", "missing"))
 
+    schema       = config.get("schema", "columns").translate(None,' \n').split(',')
+    feature      = config.get("schema", "selected").translate(None,' \n').split(',')
+
     ###########   Load Model File  ##############
     tictoc("load data...")
     bst = xgb.Booster(model_file=model_path)
-    xtest, sid, action, pos = load_testset( filename, schema, feature )
+    xtest, sid, action, pos, sku = load_testset( filename, schema, feature )
 
     ######### Scoring ###############
     tictoc("predict...")
@@ -33,7 +35,7 @@ if __name__ == '__main__':
     assert len(sid)==len(Y_test) and len(pos)==len(Y_test) and len(action)==len(Y_test)
 
     for i in range(len(Y_test)):
-        out.write( str(action[i]) + '\t' + str(sid[i])  + '\t' + str(pos[i])+ '\t' + str(Y_test[i]) + '\n')
+        out.write( "%s\t%s\t%s\t%.8f\t%s\n" %(action[i], sid[i], pos[i], Y_test[i], sku[i])
 
     tictoc("calculate map@k")
     print score_path

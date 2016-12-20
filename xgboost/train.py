@@ -1,7 +1,6 @@
 import os, sys, time, math
 import numpy as np
 import xgboost as xgb
-from schema import feature, schema
 from utils import load_trainset, tictoc, set_config_file, get_config_store
 
 
@@ -15,6 +14,11 @@ if __name__=='__main__':
     filename     = config.get("path", "train_filename")
     model_path   = config.get("path", "model_path")
     featImp_path = config.get("path", "featImp_path")
+
+    schema       = config.get("schema", "columns").translate(None,' \n').split(',')
+    feature      = config.get("schema", "selected").translate(None,' \n').split(',')
+    print len(schema)
+    print len(feature)
 
     max_depth    = config.get("model", "max_depth")
     eta          = config.get("model", "eta")
@@ -37,11 +41,11 @@ if __name__=='__main__':
     num_round = nround
     bst = xgb.train( plst, dtrain, num_round, evallist )
     bst.save_model(model_path)
-    #bst.dump_model('dump.nice1.txt','featmap.txt')
+    bst.dump_model('dump.txt')
 
     tictoc("calculate feature importance...")
     featureImpFile=open(featImp_path,'w')
-    FeatImp = bst.get_fscore()
+    FeatImp = bst.get_score(importance_type='gain')
     sortFeatImp = sorted(FeatImp.iteritems(),key = lambda FeatImp:FeatImp[1], reverse = True)
     maxImp = (float)(sortFeatImp[0][1])
     for i in range(len(sortFeatImp)):
