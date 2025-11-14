@@ -366,7 +366,3 @@ if __name__ == "__main__":
     # 也可以创建专业的K线图
     # create_mplfinance_chart(stock_code, period=60)
 
-    print("\n" + "=" * 60)
-    print("风险提示: 技术分析仅供参考，不构成投资建议!")
-    print("投资有风险，入市需谨慎!")
-    print("=" * 60)
