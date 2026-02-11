@@ -264,14 +264,14 @@ def get_high_dividend_stocks(years=3, min_dividend_per_share=0.1,
                 f'近{years}年平均每股分红(元)': round(avg_dividend_per_share, 4),
                 '近一年平均股价(元)': round(avg_price, 2) if avg_price else '数据缺失',
                 '平均股息率(%)': round(avg_dividend_yield, 2) if avg_dividend_yield else '数据缺失',
-                '最新分红年度': int(recent_fhps['年份'].iloc[0]),
+                '最新分红年度': int(recent_fhps['年份'].iloc[-1]),
                 '扫描时间': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             })
 
             processed_codes.append(code)
 
             # 礼貌休眠
-            time.sleep(0.05)
+            time.sleep(0.5)
 
         except Exception as e:
             # 出错时也记录为已处理，避免下次重复处理同一失败代码
